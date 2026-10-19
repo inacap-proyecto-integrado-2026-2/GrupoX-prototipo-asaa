@@ -23,11 +23,11 @@ El navegador se autentica con Firebase Authentication. Los datos pasan por funci
 
 ## Firebase y Vercel
 
-El proyecto Firebase `asaa-inacap` y su app web ya están creados. Authentication tiene habilitado el acceso por correo y contraseña. La base Firestore predeterminada está en `southamerica-west1` (Santiago), con protección contra borrado; sus reglas deniegan el acceso directo del navegador. La ubicación es una decisión permanente de Firestore.
+El proyecto Firebase `asaa-inacap` y su app web ya están creados. Authentication tiene habilitado el acceso por correo y contraseña. La base Firestore predeterminada está en `southamerica-west1` (Santiago), con protección contra borrado; sus reglas deniegan el acceso directo del navegador. Los índices compuestos están declarados en `firestore.indexes.json`. La ubicación es una decisión permanente de Firestore.
 
 Vercel está enlazado al repositorio privado `mrc3lo/prototipo-asaa`. Las variables públicas del SDK web están en Production, Preview y Development. La API usa una cuenta de servicio dedicada con permisos de Firebase Auth y Firestore; su clave se almacena como secreto de Vercel. No se guarda una clave de servicio en el repositorio.
 
-Para habilitar el primer acceso, crea en Firebase Authentication un usuario cuyo correo coincida con `INITIAL_ADMIN_EMAIL` en Vercel. En el primer inicio de sesión, la API aprovisiona el perfil administrador y cierra el bootstrap inicial. Las cuentas siguientes se crean desde Administración.
+Para desplegar cambios de Firebase usa `firebase deploy --only auth,firestore:rules,firestore:indexes`. Para habilitar el primer acceso, crea en Firebase Authentication un usuario cuyo correo coincida con `INITIAL_ADMIN_EMAIL` en Vercel. En el primer inicio de sesión, la API aprovisiona el perfil administrador y cierra el bootstrap inicial. Las cuentas siguientes se crean desde Administración.
 
 No subas `.env`, claves de servicio ni credenciales a GitHub. Las variables `VITE_*` son configuración pública de cliente; nunca pongas una clave privada bajo ese prefijo.
 

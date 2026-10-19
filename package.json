@@ -22,6 +22,9 @@
     "vite": "latest"
   },
   "overrides": {
-    "@grpc/grpc-js": "^1.14.6"
+    "@grpc/grpc-js": "^1.14.6",
+    "firebase-admin": {
+      "jwks-rsa": "3.2.2"
+    }
   }
 }

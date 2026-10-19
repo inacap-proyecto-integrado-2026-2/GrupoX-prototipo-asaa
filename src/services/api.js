@@ -12,6 +12,7 @@ export async function api(path, { method = 'GET', body, headers = {} } = {}) {
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   });
   const payload = await response.json().catch(() => ({}));
+  if (!response.ok && response.status >= 500) throw new ApiError(payload.error || 'El servidor no está disponible. Vuelve a intentarlo en unos momentos.', response.status, payload.code);
   if (!response.ok) throw new ApiError(payload.error || 'No se pudo completar la solicitud.', response.status, payload.code);
   return payload;
 }

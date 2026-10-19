@@ -42,6 +42,8 @@ npm run preview   # vista previa del frontend compilado
 
 La raíz de Vercel es este directorio, el comando de build es `npm run build` y la salida `dist`. Las funciones API se publican desde `api/`. Cada push a `main` inicia un despliegue de Production.
 
+El override de `jwks-rsa` en `package.json` mantiene Firebase Admin compatible con el cargador CommonJS de Vercel. La versión 4 carga `jose` como ESM mediante `require()` y provoca `ERR_REQUIRE_ESM` en la función de autenticación; al actualizar dependencias, verifica también el arranque de las funciones en Vercel.
+
 ## Permisos y datos
 
 - Roles incluidos: docente, estudiante, pañol, Prevención, Gerencia, jefatura, coordinación y administrador.

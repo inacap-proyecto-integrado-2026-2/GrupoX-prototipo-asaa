@@ -10,11 +10,12 @@ import RecordDetailPage from './pages/RecordDetailPage.jsx';
 import AttendancePage from './pages/AttendancePage.jsx';
 import UsersPage from './pages/UsersPage.jsx';
 import AuditPage from './pages/AuditPage.jsx';
-import { LoadingScreen } from './components/Feedback.jsx';
+import { ErrorState, LoadingScreen } from './components/Feedback.jsx';
 
 export default function App() {
-  const { user, loading } = useAuth();
+  const { user, profile, loading, profileError, retryProfile, logout } = useAuth();
   if (loading) return <LoadingScreen label="Verificando sesión…" />;
+  if (user && !profile && profileError) return <main className="account-blocked"><h1>No se pudo completar el acceso</h1><ErrorState error={profileError} onRetry={retryProfile}/><button className="button secondary" onClick={logout}>Volver al inicio de sesión</button></main>;
   return <Routes>
     <Route path="/login" element={user ? <Navigate to="/" replace /> : <LoginPage />} />
     <Route element={<ProtectedRoute />}>

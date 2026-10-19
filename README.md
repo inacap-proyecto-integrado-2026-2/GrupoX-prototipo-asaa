@@ -21,14 +21,13 @@ server/              Firebase Admin, validación, permisos y auditoría
 
 El navegador se autentica con Firebase Authentication. Los datos pasan por funciones API de Vercel y Firebase Admin; las reglas de Firestore deniegan el acceso directo desde clientes. La cuenta inicial se aprovisiona una sola vez mediante `INITIAL_ADMIN_EMAIL`; los siguientes usuarios se crean desde Administración. Los secretos de Firebase Admin se guardan solo en variables de servidor de Vercel.
 
-## Preparar Firebase
+## Firebase y Vercel
 
-1. Crea o selecciona un proyecto Firebase y registra una app web.
-2. Activa el proveedor **Correo electrónico/contraseña** en Authentication.
-3. Crea Firestore en modo producción y publica `firestore.rules` (`firebase deploy --only firestore:rules`).
-4. Crea en Authentication una cuenta para el correo que será administrador inicial.
-5. En Vercel, agrega las variables de `.env.example`. Copia la configuración pública de la app web a las variables `VITE_FIREBASE_*`; configura `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL` y `FIREBASE_PRIVATE_KEY` únicamente como variables server-side. Define `INITIAL_ADMIN_EMAIL` con el correo anterior.
-6. Inicia sesión con esa cuenta una vez. La primera llamada autenticada crea su perfil administrador y cierra el aprovisionamiento inicial.
+El proyecto Firebase `asaa-inacap` y su app web ya están creados. Authentication tiene habilitado el acceso por correo y contraseña. La base Firestore predeterminada está en `southamerica-west1` (Santiago), con protección contra borrado; sus reglas deniegan el acceso directo del navegador. La ubicación es una decisión permanente de Firestore.
+
+Vercel está enlazado al repositorio privado `mrc3lo/prototipo-asaa`. Las variables públicas del SDK web están en Production, Preview y Development. La API usa una cuenta de servicio dedicada con permisos de Firebase Auth y Firestore; su clave se almacena como secreto de Vercel. No se guarda una clave de servicio en el repositorio.
+
+Para habilitar el primer acceso, crea en Firebase Authentication un usuario cuyo correo coincida con `INITIAL_ADMIN_EMAIL` en Vercel. En el primer inicio de sesión, la API aprovisiona el perfil administrador y cierra el bootstrap inicial. Las cuentas siguientes se crean desde Administración.
 
 No subas `.env`, claves de servicio ni credenciales a GitHub. Las variables `VITE_*` son configuración pública de cliente; nunca pongas una clave privada bajo ese prefijo.
 
@@ -41,7 +40,7 @@ npm run build     # compilación de producción
 npm run preview   # vista previa del frontend compilado
 ```
 
-Conecta el repositorio a Vercel con la raíz del proyecto `ES2/prototipo-asaa`, comando de build `npm run build` y salida `dist`. Añade las variables a los entornos Preview y Production. Las funciones API se publican desde `api/`.
+La raíz de Vercel es este directorio, el comando de build es `npm run build` y la salida `dist`. Las funciones API se publican desde `api/`. Cada push a `main` inicia un despliegue de Production.
 
 ## Permisos y datos
 

@@ -11,6 +11,7 @@ export default async function handler(req, res) {
     if (req.method === 'GET') {
       if (!canManageRecords(user) && record.ownerUid !== user.uid) throw httpError(403, 'No tienes permiso para consultar correcciones.');
       const snapshot = await ref.collection('corrections').orderBy('createdAt', 'desc').get();
+      await audit(user.db, user.FieldValue, { actor: user, action: 'correction.list', recordId: ref.id, context: { resultCount: snapshot.size } });
       return res.status(200).json({ corrections: snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) });
     }
     if (req.method === 'POST') {

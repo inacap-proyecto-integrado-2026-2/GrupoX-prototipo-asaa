@@ -9,6 +9,7 @@ export default async function handler(req, res) {
     const user = await requireUser(req); requireRole(user, ['admin']);
     if (req.method === 'GET') {
       const snapshot = await user.db.collection('users').orderBy('createdAt', 'desc').limit(300).get();
+      await audit(user.db, user.FieldValue, { actor: user, action: 'users.list', context: { resultCount: snapshot.size } });
       return res.status(200).json({ users: snapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() })) });
     }
     if (req.method === 'POST') {

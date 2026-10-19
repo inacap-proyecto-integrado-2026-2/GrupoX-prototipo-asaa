@@ -31,6 +31,8 @@ export function sanitizeRecord(input = {}, { partial = false } = {}) {
     else throw httpError(400, `El campo ${key} no es válido.`);
   }
   if (!partial && (!output.activity || !output.date || !output.docente || !output.place || !['Práctica','Teórica'].includes(output.type))) throw httpError(400, 'Completa tipo, actividad, fecha, docente y lugar.');
+  if (output.date !== undefined && !/^\d{4}-\d{2}-\d{2}$/.test(output.date)) throw httpError(400, 'La fecha no tiene un formato válido.');
+  if (output.talkDuration !== undefined && output.talkDuration !== '' && (!Number.isFinite(Number(output.talkDuration)) || Number(output.talkDuration) < 1 || Number(output.talkDuration) > 480)) throw httpError(400, 'La duración de la charla debe estar entre 1 y 480 minutos.');
   return output;
 }
 export function validateCorrectionReason(reason) { if (typeof reason !== 'string' || reason.trim().length < 8 || reason.length > 2000) throw httpError(400, 'Describe el motivo de la corrección (al menos 8 caracteres).'); return reason.trim(); }

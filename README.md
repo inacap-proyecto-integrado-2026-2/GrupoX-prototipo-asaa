@@ -51,6 +51,7 @@ El override de `jwks-rsa` en `package.json` mantiene Firebase Admin compatible c
 - Jefatura/coordinación/administración: consultan fichas y deciden solicitudes de corrección. La ficha vuelve al docente para editarse y se vuelve a cerrar sobre el mismo documento.
 - Prevención: consulta fichas. Gerencia puede consultar auditoría y fichas según la regla amplia recogida en el informe.
 - El acceso de estudiante (QR/autoservicio) y pañol permanece deshabilitado hasta concretar la nómina institucional y los permisos pendientes. Las reglas del informe para roles distintos de docente/Prevención son amplias; la app aplica restricción mínima mientras no exista una matriz aprobada por rol.
+- La importación de asignaturas y nóminas está disponible solo para administradores desde “Importar datos”. Recibe CSV UTF-8: asignaturas (`codigo_asignatura,nombre,sede,carrera`) y matrículas (`matricula,nombre_estudiante,codigo_asignatura,seccion,periodo`); el endpoint limita a 1.000 filas y upsertea en `subjects` y `enrollments`. La nómina se guarda por matrícula/asignatura/sección/período para poder validar futuras confirmaciones QR.
 - Las fichas no tienen operación de borrado. Las consultas, exportaciones, cierres, cambios de datos, correcciones y administración de cuentas generan eventos de auditoría.
 
 ## Alcance que falta para operación productiva

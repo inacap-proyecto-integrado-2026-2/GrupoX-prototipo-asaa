@@ -1,11 +1,11 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { Activity, ClipboardCheck, Home, LogOut, Menu, Users, X, History, UserCog } from 'lucide-react';
+import { Activity, ClipboardCheck, Home, LogOut, Menu, Users, X, History, UserCog, Upload } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../auth/AuthProvider.jsx';
 
 export default function AppLayout() {
   const { profile, logout } = useAuth(); const [menuOpen, setMenuOpen] = useState(false); const navigate = useNavigate();
-  const items = [{ to: '/', label: 'Resumen', icon: Home, end: true }, { to: '/registros', label: 'Fichas ASAA', icon: ClipboardCheck }, { to: '/asistencia', label: 'Asistencia', icon: Users }, ...(['admin','jefatura','coordinacion','gerencia'].includes(profile?.role) ? [{ to: '/auditoria', label: 'Auditoría', icon: History }] : []), ...(profile?.role === 'admin' ? [{ to: '/usuarios', label: 'Usuarios', icon: UserCog }] : [])];
+  const items = [{ to: '/', label: 'Resumen', icon: Home, end: true }, { to: '/registros', label: 'Fichas ASAA', icon: ClipboardCheck }, { to: '/asistencia', label: 'Asistencia', icon: Users }, ...(['admin','jefatura','coordinacion','gerencia'].includes(profile?.role) ? [{ to: '/auditoria', label: 'Auditoría', icon: History }] : []), ...(profile?.role === 'admin' ? [{ to: '/importacion', label: 'Importar datos', icon: Upload }, { to: '/usuarios', label: 'Usuarios', icon: UserCog }] : [])];
   async function handleLogout() { await logout(); navigate('/login', { replace: true }); }
   return <div className="app-shell">
     <aside className={`sidebar ${menuOpen ? 'open' : ''}`}>

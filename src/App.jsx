@@ -10,6 +10,7 @@ import RecordDetailPage from './pages/RecordDetailPage.jsx';
 import AttendancePage from './pages/AttendancePage.jsx';
 import UsersPage from './pages/UsersPage.jsx';
 import AuditPage from './pages/AuditPage.jsx';
+import ImportPage from './pages/ImportPage.jsx';
 import { ErrorState, LoadingScreen } from './components/Feedback.jsx';
 
 export default function App() {
@@ -27,6 +28,7 @@ export default function App() {
         <Route path="/registros/:recordId" element={<RecordDetailPage />} />
         <Route path="/asistencia" element={<AttendancePage />} />
         <Route path="/usuarios" element={<UsersPage />} />
+        <Route path="/importacion" element={profile?.role === 'admin' ? <ImportPage /> : <Navigate to="/" replace />} />
         <Route path="/auditoria" element={<AuditPage />} />
       </Route>
     </Route>

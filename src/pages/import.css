@@ -1,0 +1,6 @@
+.import-preview { margin: 16px 0; overflow-x: auto; }
+.import-preview-grid { display: grid; grid-template-columns: repeat(var(--columns), minmax(115px, 1fr)); min-width: 500px; }
+.import-preview-grid > * { padding: 9px 11px; border-bottom: 1px solid #eff0f2; font-size: 9px; overflow-wrap: anywhere; }
+.import-preview-grid > strong { background: #fafbfc; color: #777e88; }
+.import-file { max-width: 500px; margin-top: 18px; }
+.import-file input { padding: 7px; }

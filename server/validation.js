@@ -1,7 +1,7 @@
 import { httpError } from './firebaseAdmin.js';
 
-const editableFields = ['type','activity','specialty','date','sede','docente','section','place','level','equipment','ppe','environment','controls','risks','stages','executionStaff','observations','far','farList','talkTopic','talkStart','talkDuration','talkDone','loto','paper','attendance'];
-const textFields = ['activity','specialty','date','sede','docente','section','place','level','observations','farList','talkTopic','talkStart'];
+const editableFields = ['type','activity','specialty','date','sede','docente','section','place','level','equipment','ppe','environment','controls','risks','stages','executionStaff','observations','far','farList','talkTopic','talkStart','talkDuration','talkDone','loto','paper','attendance','subjectCode','sectionCode','period'];
+const textFields = ['activity','specialty','date','sede','docente','section','place','level','observations','farList','talkTopic','talkStart','subjectCode','sectionCode','period'];
 const arrays = ['equipment','ppe','environment','controls','risks','stages','executionStaff','attendance'];
 export function sanitizeRecord(input = {}, { partial = false } = {}) {
   if (!input || typeof input !== 'object' || Array.isArray(input)) throw httpError(400, 'Los datos enviados no tienen un formato válido.');
@@ -23,7 +23,8 @@ export function sanitizeRecord(input = {}, { partial = false } = {}) {
         }
         if (key === 'attendance' && item && typeof item === 'object' && !Array.isArray(item)) {
           if (typeof item.name !== 'string' || item.name.length > 200 || !['Pendiente','Presente','Atraso','Ausente'].includes(item.state)) throw httpError(400, 'La asistencia contiene un valor no válido.');
-          return { name: item.name.trim(), state: item.state, method: ['Registro docente','QR'].includes(item.method) ? item.method : 'Registro docente', time: typeof item.time === 'string' && item.time.length <= 40 ? item.time : '' };
+          if (item.matricula !== undefined && (typeof item.matricula !== 'string' || item.matricula.length > 80)) throw httpError(400, 'La asistencia contiene una matrícula no válida.');
+          return { name: item.name.trim(), ...(item.matricula ? { matricula: item.matricula.trim() } : {}), state: item.state, method: ['Registro docente','QR'].includes(item.method) ? item.method : 'Registro docente', time: typeof item.time === 'string' && item.time.length <= 40 ? item.time : '' };
         }
         throw httpError(400, `La lista ${key} contiene un valor no válido.`);
       });
@@ -33,6 +34,7 @@ export function sanitizeRecord(input = {}, { partial = false } = {}) {
   if (!partial && (!output.activity || !output.date || !output.docente || !output.place || !['Práctica','Teórica'].includes(output.type))) throw httpError(400, 'Completa tipo, actividad, fecha, docente y lugar.');
   if (output.date !== undefined && !/^\d{4}-\d{2}-\d{2}$/.test(output.date)) throw httpError(400, 'La fecha no tiene un formato válido.');
   if (output.talkDuration !== undefined && output.talkDuration !== '' && (!Number.isFinite(Number(output.talkDuration)) || Number(output.talkDuration) < 1 || Number(output.talkDuration) > 480)) throw httpError(400, 'La duración de la charla debe estar entre 1 y 480 minutos.');
+  for (const key of ['subjectCode','sectionCode','period']) if (output[key] && !/^[\p{L}\p{N}._-]{1,80}$/u.test(output[key])) throw httpError(400, 'Código de asignatura, sección o período no válido (sin espacios).');
   return output;
 }
 export function validateCorrectionReason(reason) { if (typeof reason !== 'string' || reason.trim().length < 8 || reason.length > 2000) throw httpError(400, 'Describe el motivo de la corrección (al menos 8 caracteres).'); return reason.trim(); }

@@ -11,10 +11,14 @@ import AttendancePage from './pages/AttendancePage.jsx';
 import UsersPage from './pages/UsersPage.jsx';
 import AuditPage from './pages/AuditPage.jsx';
 import ImportPage from './pages/ImportPage.jsx';
+import QrSessionPage from './pages/QrSessionPage.jsx';
+import CheckinPage from './pages/CheckinPage.jsx';
 import { ErrorState, LoadingScreen } from './components/Feedback.jsx';
 
 export default function App() {
   const { user, profile, loading, profileError, retryProfile, logout } = useAuth();
+  // La marca de asistencia QR es pública: no depende de la sesión.
+  if (window.location.pathname.startsWith('/qr/')) return <Routes><Route path="/qr/:sessionId" element={<CheckinPage />} /></Routes>;
   if (loading) return <LoadingScreen label="Verificando sesión…" />;
   if (user && !profile && profileError) return <main className="account-blocked"><h1>No se pudo completar el acceso</h1><ErrorState error={profileError} onRetry={retryProfile}/><button className="button secondary" onClick={logout}>Volver al inicio de sesión</button></main>;
   return <Routes>
@@ -26,6 +30,7 @@ export default function App() {
         <Route path="/registros/nuevo" element={<RecordFormPage />} />
         <Route path="/registros/:recordId/editar" element={<RecordFormPage />} />
         <Route path="/registros/:recordId" element={<RecordDetailPage />} />
+        <Route path="/registros/:recordId/qr" element={<QrSessionPage />} />
         <Route path="/asistencia" element={<AttendancePage />} />
         <Route path="/usuarios" element={<UsersPage />} />
         <Route path="/importacion" element={profile?.role === 'admin' ? <ImportPage /> : <Navigate to="/" replace />} />

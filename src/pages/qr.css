@@ -1,0 +1,18 @@
+.qr-start { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; max-width: 640px; }
+.qr-start h2 { margin: 0; }
+.qr-start p { margin: 0; }
+.qr-layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 20px; align-items: start; }
+.qr-panel { display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center; }
+.qr-image { width: min(100%, 420px); aspect-ratio: 1; image-rendering: pixelated; border-radius: 12px; background: #fff; }
+.qr-placeholder { border: 1px dashed #d5d8dd; }
+.qr-meta { display: flex; gap: 18px; flex-wrap: wrap; justify-content: center; font-weight: 600; }
+.qr-meta span { display: inline-flex; align-items: center; gap: 6px; }
+.qr-checkins { position: sticky; top: 16px; }
+.qr-checkin-list { list-style: none; margin: 12px 0; padding: 0; max-height: 360px; overflow-y: auto; }
+.qr-checkin-list li { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 1px solid #eff0f2; }
+.qr-checkin-list li svg { color: #1f8a4c; }
+.qr-checkin-list small { color: #777e88; }
+.checkin-card { text-align: center; }
+.checkin-card form { text-align: left; }
+.checkin-ok { color: #1f8a4c; }
+@media (max-width: 900px) { .qr-layout { grid-template-columns: 1fr; } .qr-checkins { position: static; } }

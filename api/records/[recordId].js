@@ -16,7 +16,9 @@ export default async function handler(req, res) {
     if (req.method === 'PATCH') {
       if (!['docente','admin','jefatura','coordinacion'].includes(user.role) || record.ownerUid !== user.uid) throw httpError(403, 'Solo el docente responsable puede editar esta ficha.');
       if (!['open','correction_open'].includes(record.status)) throw httpError(409, 'La ficha no está habilitada para edición.');
-      if (record.qrSessionId) throw httpError(409, 'Hay una asistencia QR en curso. Finalízala antes de editar la ficha.');
+      // Confirmar la charla (solo talkDone) no toca la asistencia, así que se permite durante una sesión QR.
+      const onlyTalkConfirm = record.status === 'open' && req.body && Object.keys(req.body).length === 1 && req.body.talkDone === true;
+      if (record.qrSessionId && !onlyTalkConfirm) throw httpError(409, 'Hay una asistencia QR en curso. Finalízala antes de editar la ficha.');
       const correctionId = req.body?.correctionId;
       if (record.status === 'correction_open') {
         const approvedId = record.approvedCorrectionId;

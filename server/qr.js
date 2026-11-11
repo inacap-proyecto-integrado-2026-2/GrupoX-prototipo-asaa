@@ -31,7 +31,7 @@ export function requireRosterLink(record) {
 
 export const sessionExpired = (session, now = Date.now()) => !session.active || (session.expiresAt?.toMillis?.() ?? 0) <= now;
 
-// Cierra la sesión QR y traspasa sus marcas a record.attendance. Es idempotente.
+// Cierra la sesión QR y traspasa sus marcas a record.attendance; los pendientes de la nómina pasan a Ausente. Es idempotente.
 // Primero se desactiva la sesión (las marcas se crean en una transacción que exige active=true),
 // así ninguna marca puede llegar después de leer la lista.
 export async function finishSession(db, FieldValue, recordRef, sessionId) {
@@ -50,17 +50,24 @@ export async function finishSession(db, FieldValue, recordRef, sessionId) {
       const time = checkin.checkedAt?.toDate?.().toISOString() || '';
       const index = attendance.findIndex(item => item.matricula === checkin.matricula);
       if (index >= 0) {
-        if (attendance[index].method === 'QR') continue;
+        // Un "Ausente" puesto automáticamente al cerrar una sesión QR anterior sí se reemplaza por la nueva marca.
+        const autoAbsent = attendance[index].method === 'QR' && attendance[index].state === 'Ausente';
+        if (attendance[index].method === 'QR' && !autoAbsent) continue;
         // Si el docente ya marcó manualmente un estado distinto de Pendiente, se respeta su decisión.
-        if (attendance[index].state !== 'Pendiente') continue;
+        if (attendance[index].state !== 'Pendiente' && !autoAbsent) continue;
         attendance[index] = { ...attendance[index], state: 'Presente', method: 'QR', time };
       } else {
         attendance.push({ name: checkin.name, matricula: checkin.matricula, state: 'Presente', method: 'QR', time });
       }
       merged++;
     }
+    // Quien estaba en la nómina y no marcó durante la sesión queda Ausente (el docente puede cambiarlo a Atraso u otro estado).
+    let absent = 0;
+    for (let i = 0; i < attendance.length; i++) {
+      if (attendance[i].matricula && attendance[i].state === 'Pendiente') { attendance[i] = { ...attendance[i], state: 'Ausente', method: 'QR', time: '' }; absent++; }
+    }
     const recordPatch = { updatedAt: FieldValue.serverTimestamp() };
-    if (merged) recordPatch.attendance = attendance.slice(0, 100);
+    if (merged || absent) recordPatch.attendance = attendance.slice(0, 100);
     if (recordSnap.data().qrSessionId === sessionId) recordPatch.qrSessionId = FieldValue.delete();
     tx.update(recordRef, recordPatch);
     return merged;

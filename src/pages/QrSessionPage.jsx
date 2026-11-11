@@ -20,7 +20,7 @@ export default function QrSessionPage() {
     try {
       const result = await api(`/records/${recordId}/qr`);
       setSession(result.session ? { ...result.session, changeAt: Date.now() + result.session.refreshInMs } : null); setCheckins(result.checkins || []);
-      if (result.ended) setNotice(`La sesión QR terminó. Se incorporaron ${result.merged} asistencias a la ficha.`);
+      if (result.ended) setNotice(`La sesión QR terminó. Se incorporaron ${result.merged} asistencias a la ficha; quienes no marcaron quedaron como Ausente.`);
       setError('');
     } catch (e) { setError(e.message); }
   }, [recordId]);
@@ -41,7 +41,7 @@ export default function QrSessionPage() {
   }
   async function finish() {
     setBusy(true); setError('');
-    try { const result = await api(`/records/${recordId}/qr`, { method: 'DELETE' }); setSession(null); setQrImage(''); lastToken.current = ''; setNotice(`Asistencia QR finalizada. Se incorporaron ${result.merged} asistencias a la ficha.`); } catch (e) { setError(e.message); } finally { setBusy(false); }
+    try { const result = await api(`/records/${recordId}/qr`, { method: 'DELETE' }); setSession(null); setQrImage(''); lastToken.current = ''; setNotice(`Asistencia QR finalizada. Se incorporaron ${result.merged} asistencias a la ficha; quienes no marcaron quedaron como Ausente.`); } catch (e) { setError(e.message); } finally { setBusy(false); }
   }
 
   if (loading) return <LoadingScreen/>;

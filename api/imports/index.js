@@ -9,12 +9,52 @@ const required = {
 const clean = value => typeof value === 'string' ? value.trim() : '';
 const validCode = value => /^[\p{L}\p{N}._-]{1,80}$/u.test(value);
 
+// Catálogo para el formulario de fichas: asignaturas importadas y sus secciones/períodos según la nómina.
+// No expone matrículas ni nombres de estudiantes; solo códigos y cantidad de inscritos.
+async function catalog(user) {
+  requireRole(user, ['admin', 'docente', 'jefatura', 'coordinacion']);
+  const [subjectsSnap, enrollmentsSnap] = await Promise.all([
+    user.db.collection('subjects').limit(2000).get(),
+    user.db.collection('enrollments').select('codigo_asignatura', 'seccion', 'periodo').limit(20000).get(),
+  ]);
+  const sections = new Map();
+  enrollmentsSnap.forEach(doc => {
+    const { codigo_asignatura: subjectCode, seccion: sectionCode, periodo: period } = doc.data();
+    const key = `${subjectCode}\u0000${sectionCode}\u0000${period}`;
+    const entry = sections.get(key) || { subjectCode, sectionCode, period, students: 0 };
+    entry.students += 1;
+    sections.set(key, entry);
+  });
+  const subjects = subjectsSnap.docs
+    .map(doc => { const s = doc.data(); return { code: s.codigo_asignatura, name: s.nombre, sede: s.sede, career: s.carrera }; })
+    .sort((a, b) => a.code.localeCompare(b.code));
+  const sectionList = [...sections.values()].sort((a, b) => b.period.localeCompare(a.period) || a.subjectCode.localeCompare(b.subjectCode) || a.sectionCode.localeCompare(b.sectionCode, undefined, { numeric: true }));
+  return { subjects, sections: sectionList };
+}
+
+// Estudiantes de una asignatura/sección/período, para precargar la asistencia de la ficha.
+async function roster(user, query) {
+  requireRole(user, ['admin', 'docente', 'jefatura', 'coordinacion']);
+  const [subject, section, period] = [query.subject, query.section, query.period].map(clean);
+  if (![subject, section, period].every(validCode)) throw httpError(400, 'Indica asignatura, sección y período válidos.');
+  const snapshot = await user.db.collection('enrollments')
+    .where('codigo_asignatura', '==', subject).where('seccion', '==', section).where('periodo', '==', period)
+    .limit(101).get();
+  if (snapshot.size > 100) throw httpError(400, 'La nómina supera el máximo de 100 estudiantes por ficha.');
+  const students = snapshot.docs
+    .map(doc => ({ matricula: doc.data().matricula, name: doc.data().nombre_estudiante }))
+    .sort((a, b) => a.name.localeCompare(b.name, 'es'));
+  await audit(user.db, user.FieldValue, { actor: user, action: 'roster.read', context: { subject, section, period, resultCount: students.length } });
+  return { students };
+}
+
 export default async function handler(req, res) {
   setNoStore(res);
   try {
     const user = await requireUser(req);
+    if (req.method === 'GET') return res.status(200).json(req.query.subject ? await roster(user, req.query) : await catalog(user));
     requireRole(user, ['admin']);
-    if (req.method !== 'POST') return methodNotAllowed(res, ['POST']);
+    if (req.method !== 'POST') return methodNotAllowed(res, ['GET', 'POST']);
     const { type, rows } = req.body || {};
     if (!required[type] || !Array.isArray(rows) || rows.length < 1 || rows.length > 1000) {
       throw httpError(400, 'Selecciona una importación válida (entre 1 y 1.000 filas).');

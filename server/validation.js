@@ -10,7 +10,10 @@ export function sanitizeRecord(input = {}, { partial = false } = {}) {
     if (partial && !(key in input)) continue;
     if (!(key in input)) continue;
     const value = input[key];
-    if (textFields.includes(key)) {
+    if (key === 'type') {
+      if (!['Práctica','Teórica'].includes(value)) throw httpError(400, 'El tipo de actividad debe ser Práctica o Teórica.');
+      output.type = value;
+    } else if (textFields.includes(key)) {
       if (typeof value !== 'string' || value.length > 5000) throw httpError(400, `El campo ${key} no es válido.`);
       output[key] = value.trim();
     } else if (arrays.includes(key)) {

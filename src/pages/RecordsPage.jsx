@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Plus, RefreshCw, Search, Settings2 } from 'lucide-react';
+import { FileDown, Plus, RefreshCw, Search, Settings2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider.jsx';
 import { useOffline } from '../lib/OfflineContext.jsx';
 import { getOfflineRecords, saveOfflineRecords } from '../lib/offlineStore.js';
 import { ErrorState, LoadingScreen, PageTitle, EmptyState } from '../components/Feedback.jsx';
 import RecordRow from '../components/RecordRow.jsx';
-import { api } from '../services/api.js';
+import { api, apiDownload } from '../services/api.js';
 
 export default function RecordsPage() {
   const { profile } = useAuth();
@@ -16,6 +16,28 @@ export default function RecordsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isFromCache, setIsFromCache] = useState(false);
+  const [downloadingTemplate, setDownloadingTemplate] = useState(false);
+  const [templateMessage, setTemplateMessage] = useState('');
+
+  const downloadBlankTemplate = async () => {
+    setDownloadingTemplate(true);
+    setTemplateMessage('');
+    try {
+      const { filename } = await apiDownload('/records/plantilla/export', {
+        defaultFilename: 'ASAA_Plantilla_En_Blanco_Terreno.pdf',
+      });
+      setTemplateMessage(`Plantilla oficial descargada (${filename}). Ideal para imprimir antes de salir a terreno.`);
+      setTimeout(() => setTemplateMessage(''), 6000);
+    } catch (err) {
+      if (!navigator.onLine) {
+        alert('Estás sin conexión a internet. Para descargar la plantilla oficial en PDF debes conectarte previamente a la red.');
+      } else {
+        alert(err.message || 'Error al descargar la plantilla.');
+      }
+    } finally {
+      setDownloadingTemplate(false);
+    }
+  };
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -72,6 +94,15 @@ export default function RecordsPage() {
         }
         action={
           <div className="title-actions">
+            <button
+              className="button secondary"
+              onClick={downloadBlankTemplate}
+              disabled={downloadingTemplate}
+              title="Descarga la plantilla en blanco oficial en PDF con casillas de verificación y nómina de asistencia para llenar en terreno sin cobertura de red"
+            >
+              <FileDown size={16} />
+              {downloadingTemplate ? 'Generando PDF…' : 'Descargar plantilla PDF (Terreno)'}
+            </button>
             {pendingCount > 0 && isOnline && (
               <button
                 className="button secondary"
@@ -91,6 +122,12 @@ export default function RecordsPage() {
           </div>
         }
       />
+
+      {templateMessage && (
+        <div className="form-success" style={{ marginBottom: '16px' }}>
+          {templateMessage}
+        </div>
+      )}
 
       <div className="filter-bar">
         <div className="search-box">

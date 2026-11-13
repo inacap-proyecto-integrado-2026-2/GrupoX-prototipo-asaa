@@ -10,7 +10,18 @@ export default async function handler(req, res) {
   }
   try {
     const user = await requireUser(req);
-    const { ref, record } = await assertRecordAccess(user, req.query.recordId);
+    const { recordId } = req.query;
+
+    // Fast-path: Download blank institutional template for field / offline activities
+    if (recordId === 'plantilla' || recordId === 'template') {
+      const pdfBuffer = await generateRecordPdf({ isTemplate: true });
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'attachment; filename="ASAA_Plantilla_En_Blanco_Terreno.pdf"');
+      res.setHeader('Content-Length', pdfBuffer.length);
+      return res.status(200).send(pdfBuffer);
+    }
+
+    const { ref, record } = await assertRecordAccess(user, recordId);
 
     // Generate real server-side PDF document
     const pdfBuffer = await generateRecordPdf({ id: ref.id, ...record });

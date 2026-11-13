@@ -154,6 +154,14 @@ export default function RecordDetailPage() {
   async function exportPdf() {
     setError('');
     setMessage('');
+
+    // Offline fallback: si el docente está en terreno sin conexión, se abre la vista de impresión/guardar PDF nativa
+    if (!navigator.onLine) {
+      setMessage('Modo sin conexión a internet: abriendo diálogo de impresión / guardado en PDF de la ficha.');
+      setTimeout(() => window.print(), 200);
+      return;
+    }
+
     setBusy(true);
     try {
       const { filename } = await apiDownload(`/records/${recordId}/export`, {
@@ -161,7 +169,9 @@ export default function RecordDetailPage() {
       });
       setMessage(`Ficha descargada exitosamente en formato PDF oficial (${filename}) y registrada en auditoría.`);
     } catch (e) {
-      setError(e.message);
+      console.warn('Fallo descarga de PDF en servidor, recurriendo a impresión local:', e);
+      setMessage('No se pudo conectar con el servidor de PDF. Abriendo vista de impresión del navegador para guardar en PDF.');
+      setTimeout(() => window.print(), 200);
     } finally {
       setBusy(false);
     }

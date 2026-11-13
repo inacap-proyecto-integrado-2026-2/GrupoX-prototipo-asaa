@@ -1,5 +1,9 @@
 {
+  "framework": "vite",
+  "outputDirectory": "dist",
   "rewrites": [
+    { "source": "/api/records/:recordId/corrections/:correctionId", "destination": "/api/records/:recordId/corrections?correctionId=:correctionId" },
+    { "source": "/api/users/:uid", "destination": "/api/users?uid=:uid" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
   "functions": {

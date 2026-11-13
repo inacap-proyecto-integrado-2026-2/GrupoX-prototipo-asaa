@@ -155,10 +155,10 @@ export default function RecordFormPage() {
           const fresh = students
             .filter(s => !known.has(s.matricula))
             .map(s => ({
-              name: s.nombre_estudiante,
+              name: s.name,
               matricula: s.matricula,
               state: 'Pendiente',
-              method: 'Nómina',
+              method: 'Registro docente',
               time: '',
             }));
           return { ...current, attendance: [...attendance, ...fresh] };

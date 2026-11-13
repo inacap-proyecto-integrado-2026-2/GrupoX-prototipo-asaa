@@ -433,7 +433,12 @@ export default function RecordFormPage() {
                   placeholder="Condiciones particulares del lugar o tarea"
                 />
               </Field>
-              <StagesEditor stages={draft.stages || []} onChange={v => update('stages', v)} />
+              <StagesEditor
+                stages={draft.stages}
+                setStages={fn => setDraft(current => ({ ...current, stages: fn(current.stages || []) }))}
+                riskOptions={riskOptions}
+                controlOptions={controlOptions}
+              />
               <div className="stage-header staff-header">
                 <div>
                   <strong>Personal ejecutante</strong>

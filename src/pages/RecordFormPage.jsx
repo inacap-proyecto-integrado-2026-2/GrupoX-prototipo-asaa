@@ -356,7 +356,7 @@ export default function RecordFormPage() {
                 <Field label="Docente responsable" required>
                   <input maxLength="200" value={draft.docente} onChange={e => update('docente', e.target.value)} />
                 </Field>
-                <NominaFields draft={draft} onChange={(key, val) => update(key, val)} />
+                <NominaFields draft={draft} setDraft={setDraft} />
                 <Field label="Sala / taller / laboratorio / terreno" required>
                   <input maxLength="200" value={draft.place} onChange={e => update('place', e.target.value)} />
                 </Field>

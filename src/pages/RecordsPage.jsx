@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FileDown, Plus, RefreshCw, Search, Settings2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider.jsx';
+import { canCreateRecords } from '../lib/permissions.js';
 import { useOffline } from '../lib/OfflineContext.jsx';
 import { getOfflineRecords, saveOfflineRecords } from '../lib/offlineStore.js';
 import { ErrorState, LoadingScreen, PageTitle, EmptyState } from '../components/Feedback.jsx';
@@ -116,9 +117,11 @@ export default function RecordsPage() {
                 {isSyncing ? 'Sincronizando…' : `Sincronizar (${pendingCount})`}
               </button>
             )}
-            <Link className="button primary" to="/registros/nuevo">
-              <Plus size={18} /> Nueva ficha
-            </Link>
+            {canCreateRecords(profile?.role) && (
+              <Link className="button primary" to="/registros/nuevo">
+                <Plus size={18} /> Nueva ficha
+              </Link>
+            )}
           </div>
         }
       />

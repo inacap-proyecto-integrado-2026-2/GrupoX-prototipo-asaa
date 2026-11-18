@@ -1,7 +1,7 @@
 import { assertRecordAccess, requireUser } from '../../../server/auth.js';
 import { audit } from '../../../server/audit.js';
 import { httpError, methodNotAllowed, publicError, setNoStore } from '../../../server/firebaseAdmin.js';
-import { QR_SESSION_MINUTES, QR_WINDOW_MS, currentWindow, finishSession, newSecret, requireRosterLink, sessionExpired, tokenFor } from '../../../server/qr.js';
+import { lateAfterMillis, QR_SESSION_MINUTES, QR_WINDOW_MS, currentWindow, finishSession, newSecret, requireRosterLink, sessionExpired, tokenFor } from '../../../server/qr.js';
 
 const MAX_ATTENDANCE = 100;
 
@@ -31,6 +31,7 @@ export default async function handler(req, res) {
           refreshInMs: QR_WINDOW_MS - (now % QR_WINDOW_MS),
           expiresAt: session.expiresAt.toMillis(),
           enrolledCount: session.enrolledCount,
+          lateAfter: session.lateAfter || null,
         },
         checkins: checkins.docs.map(doc => ({ matricula: doc.data().matricula, name: doc.data().name, checkedAt: doc.data().checkedAt?.toMillis?.() || null })),
       });
@@ -49,7 +50,7 @@ export default async function handler(req, res) {
 
       const sessionRef = sessions.doc();
       const expiresAt = new Date(Date.now() + QR_SESSION_MINUTES * 60_000);
-      await sessionRef.create({ recordId: ref.id, ownerUid: user.uid, ...link, secret: newSecret(), active: true, enrolledCount: roster.size, failedAttempts: 0, createdAt: user.FieldValue.serverTimestamp(), expiresAt });
+      await sessionRef.create({ recordId: ref.id, ownerUid: user.uid, ...link, secret: newSecret(), active: true, enrolledCount: roster.size, failedAttempts: 0, lateAfter: lateAfterMillis(record), createdAt: user.FieldValue.serverTimestamp(), expiresAt });
 
       // Precarga la nómina como "Pendiente" para que el docente vea quién falta.
       await user.db.runTransaction(async tx => {

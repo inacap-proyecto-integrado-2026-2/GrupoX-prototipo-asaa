@@ -37,3 +37,7 @@
 .conflicts-banner-content li{margin-bottom:3px}
 .badge.offline{background:#ffedd5;color:#9a3412;border-color:#fed7aa}
 .badge.offline i{background:#ea580c}
+.student-item{display:grid;gap:5px}.student-extra{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:0 0 4px 8px}.student-extra input:not([type=checkbox]){flex:1;min-width:180px;height:26px;border:1px solid #e2e5e9;border-radius:5px;padding:0 7px;font-size:9px}.individual-talk{font-size:9px;color:#6a5a2a}.attendee-note{display:block;margin-top:3px;font-weight:400;font-size:8px;color:#7d838c}.attendee-note.ok{color:#27804e}.attendee-note.warn{color:#a56b0a}
+.student-item{border-bottom:1px solid #eff0f2}.student-item:last-child{border-bottom:0}.student-item .student-row{border-bottom:0}
+.late-suggest{display:flex;align-items:center;gap:6px;width:100%;font-size:9px;color:#8a5a08;background:#fff8e9;border:1px solid #f3e8cc;border-radius:5px;padding:5px 7px}.late-suggest .text-button{margin-left:auto;font-size:9px;font-weight:600;color:#a56b0a}
+.account-blocked .button{margin-top:14px}.no-permission{display:grid;justify-items:center;gap:12px;padding:40px 0}

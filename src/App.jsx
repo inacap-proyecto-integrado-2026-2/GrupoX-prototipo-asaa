@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { useAuth } from './auth/AuthProvider.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
+import RequireRecordCreator from './components/RequireRecordCreator.jsx';
 import AppLayout from './components/AppLayout.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import DashboardPage from './pages/DashboardPage.jsx';
@@ -27,7 +28,7 @@ export default function App() {
       <Route element={<AppLayout />}>
         <Route index element={<DashboardPage />} />
         <Route path="/registros" element={<RecordsPage />} />
-        <Route path="/registros/nuevo" element={<RecordFormPage />} />
+        <Route path="/registros/nuevo" element={<RequireRecordCreator><RecordFormPage /></RequireRecordCreator>} />
         <Route path="/registros/:recordId/editar" element={<RecordFormPage />} />
         <Route path="/registros/:recordId" element={<RecordDetailPage />} />
         <Route path="/registros/:recordId/qr" element={<QrSessionPage />} />

@@ -17,6 +17,7 @@ import {
 import { useState } from 'react';
 import { useAuth } from '../auth/AuthProvider.jsx';
 import { useOffline } from '../lib/OfflineContext.jsx';
+import { roleLabel } from '../lib/permissions.js';
 
 export default function AppLayout() {
   const { profile, logout } = useAuth();
@@ -86,7 +87,7 @@ export default function AppLayout() {
             </div>
             <div className="profile-name">
               <strong>{profile?.name || profile?.email}</strong>
-              <span>{profile?.roleLabel || profile?.role}</span>
+              <span>{profile?.roleLabel || roleLabel(profile?.role)}</span>
             </div>
             <button className="icon-btn" title="Cerrar sesión" onClick={handleLogout}>
               <LogOut size={16} />

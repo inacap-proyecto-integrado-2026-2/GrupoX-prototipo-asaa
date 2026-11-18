@@ -73,7 +73,7 @@ export default function QrSessionPage() {
         <div className="aside-icon"><Users size={18}/></div>
         <strong>{checkins.length} de {session.enrolledCount} presentes</strong>
         <div className="attendance-progress"><span style={{ width: `${session.enrolledCount ? checkins.length / session.enrolledCount * 100 : 0}%` }}/></div>
-        <ul className="qr-checkin-list">{checkins.map(c => <li key={c.matricula}><CheckCircle2 size={14}/><span>{c.name}</span><small>{c.checkedAt ? new Date(c.checkedAt).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }) : ''}</small></li>)}</ul>
+        <ul className="qr-checkin-list">{checkins.map(c => <li key={c.matricula}><CheckCircle2 size={14}/><span>{c.name}</span><small>{c.checkedAt ? new Date(c.checkedAt).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }) : ''}{session?.lateAfter && c.checkedAt > session.lateAfter ? ' · atraso' : ''}</small></li>)}</ul>
         {!checkins.length && <p className="muted">Aún nadie ha marcado asistencia.</p>}
         <p className="muted">Al finalizar, los presentes se guardan en la ficha. Atrasos y ausencias los marcas tú desde “Editar ficha”.</p>
       </aside>

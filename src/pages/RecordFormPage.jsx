@@ -54,6 +54,8 @@ const newRecord = profile => ({
 const stepsPractice = ['Actividad', 'Seguridad', 'Charla y asistencia', 'Revisión'];
 const stepsTheory = ['Actividad', 'Revisión'];
 
+const LATE_TOLERANCE_MINUTES = 15; // igual que server/qr.js
+
 export default function RecordFormPage() {
   const { recordId } = useParams();
   const [params] = useSearchParams();
@@ -176,6 +178,10 @@ export default function RecordFormPage() {
   }, [rosterKey, loading]);
 
   const update = (key, value) => setDraft(current => ({ ...current, [key]: value }));
+  // Hora desde la que una marca manual se sugiere como atraso (inicio de la charla + tolerancia, hora local).
+  const lateAfter = /^\d{4}-\d{2}-\d{2}$/.test(draft.date || '') && /^\d{1,2}:\d{2}$/.test(draft.talkStart || '')
+    ? new Date(`${draft.date}T${draft.talkStart.padStart(5, '0')}`).getTime() + LATE_TOLERANCE_MINUTES * 60_000
+    : null;
   const toggle = (key, value) =>
     update(key, draft[key].includes(value) ? draft[key].filter(item => item !== value) : [...draft[key], value]);
 
@@ -557,7 +563,8 @@ export default function RecordFormPage() {
               )}
               <div className="roster">
                 {(draft.attendance || []).map((student, i) => (
-                  <div className="student-row" key={student.matricula || `manual-${i}`}>
+                  <div className="student-item" key={student.matricula || `manual-${i}`}>
+                  <div className="student-row">
                     {student.matricula && <span className="student-mat">{student.matricula}</span>}
                     <input
                       className="student-name-input"
@@ -580,7 +587,8 @@ export default function RecordFormPage() {
                           'attendance',
                           draft.attendance.map((a, j) =>
                             j === i
-                              ? a.method === 'QR'
+                              ? // Una marca real por QR conserva su método y hora; el "Ausente" que dejó el cierre del QR pasa a registro manual.
+                                a.method === 'QR' && a.state !== 'Ausente'
                                 ? { ...a, state: e.target.value }
                                 : { ...a, state: e.target.value, method: 'Registro docente', time: new Date().toISOString() }
                               : a
@@ -601,6 +609,54 @@ export default function RecordFormPage() {
                     >
                       ×
                     </button>
+                  </div>
+                  {(student.state !== 'Pendiente' && student.method !== 'QR') || student.state === 'Atraso' ? (
+                    <div className="student-extra">
+                      {student.state === 'Presente' && student.method !== 'QR' && lateAfter && Date.parse(student.time) > lateAfter && (
+                        <div className="late-suggest">
+                          <Clock3 size={13} />
+                          <span>Marcado después de las {new Date(lateAfter).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })} (inicio de la charla + {LATE_TOLERANCE_MINUTES} min).</span>
+                          <button
+                            type="button"
+                            className="text-button"
+                            onClick={() => update('attendance', draft.attendance.map((a, j) => (j === i ? { ...a, state: 'Atraso' } : a)))}
+                          >
+                            Marcar como atraso
+                          </button>
+                        </div>
+                      )}
+                      {student.state !== 'Pendiente' && student.method !== 'QR' && (
+                        <input
+                          maxLength="300"
+                          aria-label={`Motivo del registro manual de ${student.name || 'estudiante'}`}
+                          placeholder="Motivo del registro manual (ej. sin teléfono)"
+                          value={student.reason || ''}
+                          onChange={e =>
+                            update('attendance', draft.attendance.map((a, j) => (j === i ? { ...a, reason: e.target.value } : a)))
+                          }
+                        />
+                      )}
+                      {student.state === 'Atraso' && (
+                        <label className="check-line individual-talk">
+                          <input
+                            type="checkbox"
+                            checked={Boolean(student.individualTalk)}
+                            onChange={e =>
+                              update(
+                                'attendance',
+                                draft.attendance.map((a, j) => {
+                                  if (j !== i) return a;
+                                  if (!e.target.checked) { const { individualTalkAt, ...rest } = a; return { ...rest, individualTalk: false }; }
+                                  return { ...a, individualTalk: true, individualTalkAt: new Date().toISOString() };
+                                })
+                              )
+                            }
+                          />
+                          <span>Charla individual entregada</span>
+                        </label>
+                      )}
+                    </div>
+                  ) : null}
                   </div>
                 ))}
               </div>

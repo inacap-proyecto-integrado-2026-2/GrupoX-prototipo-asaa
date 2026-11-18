@@ -324,6 +324,14 @@ export default function RecordDetailPage() {
                       <strong>
                         {person.name || 'Sin nombre'}
                         {person.matricula && <small> · {person.matricula}</small>}
+                        {person.reason && <small className="attendee-note">Motivo: {person.reason}</small>}
+                        {person.state === 'Atraso' && (
+                          <small className={`attendee-note ${person.individualTalk ? 'ok' : 'warn'}`}>
+                            {person.individualTalk
+                              ? `Charla individual entregada${person.individualTalkAt ? ` · ${new Date(person.individualTalkAt).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}` : ''}`
+                              : 'Charla individual pendiente'}
+                          </small>
+                        )}
                       </strong>
                       <span
                         className={`attendance-state ${

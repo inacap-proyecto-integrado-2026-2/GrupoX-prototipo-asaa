@@ -29,7 +29,11 @@ export function requireRole(user, roles) { if (!roles.includes(user.role)) throw
 export function canReadAllRecords(user) { return ['admin', 'jefatura', 'coordinacion', 'prevencion', 'gerencia'].includes(user.role); }
 export function canManageRecords(user) { return ['admin', 'jefatura', 'coordinacion'].includes(user.role); }
 export function canReadRecord(user, record) { return canReadAllRecords(user) || (user.role === 'docente' && record.ownerUid === user.uid); }
+// IDs de Firestore/Firebase Auth que llegan por URL o cuerpo: solo letras, números, guion y guion bajo.
+// Evita el error 500 que lanza Firestore con barras, rutas o IDs demasiado largos.
+export const validId = value => typeof value === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(value);
 export async function assertRecordAccess(user, recordId) {
+  if (!validId(recordId)) throw httpError(404, 'No se encontró la ficha.');
   const snap = await user.db.collection('records').doc(recordId).get();
   if (!snap.exists) throw httpError(404, 'No se encontró la ficha.');
   const record = snap.data();

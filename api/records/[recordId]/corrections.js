@@ -1,4 +1,4 @@
-import { assertRecordAccess, canManageRecords, requireUser } from '../../../server/auth.js';
+import { assertRecordAccess, canManageRecords, requireUser, validId } from '../../../server/auth.js';
 import { audit } from '../../../server/audit.js';
 import { httpError, methodNotAllowed, publicError, setNoStore } from '../../../server/firebaseAdmin.js';
 import { validateCorrectionReason } from '../../../server/validation.js';
@@ -13,6 +13,7 @@ export default async function handler(req, res) {
     if (req.method === 'PATCH') {
       const correctionId = req.query.correctionId;
       if (!correctionId) throw httpError(400, 'Identificador de corrección requerido.');
+      if (!validId(correctionId)) throw httpError(404, 'No se encontró una solicitud pendiente.');
       if (!canManageRecords(user)) throw httpError(403, 'Solo jefatura, coordinación o administración puede decidir una corrección.');
       if (record.status !== 'correction_pending') throw httpError(409, 'La ficha no tiene una solicitud pendiente.');
       const correctionRef = ref.collection('corrections').doc(correctionId);

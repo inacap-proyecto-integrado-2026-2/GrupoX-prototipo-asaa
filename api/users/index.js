@@ -1,4 +1,4 @@
-import { requireRole, requireUser } from '../../server/auth.js';
+import { requireRole, requireUser, validId } from '../../server/auth.js';
 import { audit } from '../../server/audit.js';
 import { httpError, methodNotAllowed, publicError, setNoStore } from '../../server/firebaseAdmin.js';
 
@@ -14,6 +14,7 @@ export default async function handler(req, res) {
     if (req.method === 'PATCH') {
       const targetUid = req.query.uid;
       if (!targetUid) throw httpError(400, 'Identificador de usuario requerido.');
+      if (!validId(targetUid)) throw httpError(404, 'No se encontró la cuenta.');
       const { active, role } = req.body || {};
       if (active === undefined && role === undefined) throw httpError(400, 'No hay cambios para guardar.');
       if (active !== undefined && typeof active !== 'boolean') throw httpError(400, 'Estado de cuenta no válido.');

@@ -27,7 +27,17 @@ export function sanitizeRecord(input = {}, { partial = false } = {}) {
         if (key === 'attendance' && item && typeof item === 'object' && !Array.isArray(item)) {
           if (typeof item.name !== 'string' || item.name.length > 200 || !['Pendiente','Presente','Atraso','Ausente'].includes(item.state)) throw httpError(400, 'La asistencia contiene un valor no válido.');
           if (item.matricula !== undefined && (typeof item.matricula !== 'string' || item.matricula.length > 80)) throw httpError(400, 'La asistencia contiene una matrícula no válida.');
-          return { name: item.name.trim(), ...(item.matricula ? { matricula: item.matricula.trim() } : {}), state: item.state, method: ['Registro docente','QR'].includes(item.method) ? item.method : 'Registro docente', time: typeof item.time === 'string' && item.time.length <= 40 ? item.time : '' };
+          if (item.reason !== undefined && (typeof item.reason !== 'string' || item.reason.length > 300)) throw httpError(400, 'El motivo de asistencia no es válido (máximo 300 caracteres).');
+          if (item.individualTalk !== undefined && typeof item.individualTalk !== 'boolean') throw httpError(400, 'La charla individual no es válida.');
+          const individualTalk = item.state === 'Atraso' && item.individualTalk === true;
+          return {
+            name: item.name.trim(), ...(item.matricula ? { matricula: item.matricula.trim() } : {}), state: item.state,
+            method: ['Registro docente','QR'].includes(item.method) ? item.method : 'Registro docente',
+            time: typeof item.time === 'string' && item.time.length <= 40 ? item.time : '',
+            // Motivo del registro manual (p. ej. "Sin teléfono") y charla individual entregada a quien llegó atrasado.
+            ...(item.reason?.trim() ? { reason: item.reason.trim() } : {}),
+            ...(individualTalk ? { individualTalk: true, individualTalkAt: typeof item.individualTalkAt === 'string' && item.individualTalkAt.length <= 40 ? item.individualTalkAt : new Date().toISOString() } : {}),
+          };
         }
         throw httpError(400, `La lista ${key} contiene un valor no válido.`);
       });
